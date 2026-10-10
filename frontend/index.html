@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agentic RAG Text-to-SQL</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--ink:#1d2433;--mut:#6b7280;--acc:#4f46e5;--ok:#15803d;--bad:#b91c1c;--bd:#e5e7eb}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1420;--card:#171d2c;--ink:#e6e9f2;--mut:#98a2b3;--acc:#8b93ff;--ok:#4ade80;--bad:#f87171;--bd:#2a3247}}
+*{box-sizing:border-box}body{margin:0;font:15px/1.5 system-ui,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}
+main{max-width:980px;margin:0 auto;padding:24px 16px}h1{font-size:22px;margin:0 0 4px}.sub{color:var(--mut);margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:16px}
+textarea{width:100%;min-height:70px;border:1px solid var(--bd);border-radius:8px;padding:10px;font:inherit;background:var(--bg);color:var(--ink);resize:vertical}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+button{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:9px 16px;font:inherit;cursor:pointer}button:disabled{opacity:.5}
+select,label{font-size:14px;color:var(--mut)}select{background:var(--bg);color:var(--ink);border:1px solid var(--bd);border-radius:6px;padding:6px}
+.chips button{background:transparent;color:var(--acc);border:1px solid var(--bd);padding:4px 10px;font-size:13px}
+.stats{display:flex;gap:20px;flex-wrap:wrap;color:var(--mut);font-size:13px;margin-bottom:10px}.stats b{color:var(--ink)}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--bd);margin-bottom:12px}
+.tab{background:none;color:var(--mut);border-radius:6px 6px 0 0;padding:8px 12px}.tab.on{color:var(--acc);border-bottom:2px solid var(--acc)}
+pre{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:12px;overflow:auto;white-space:pre-wrap;font-size:13px;margin:0}
+table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid var(--bd);padding:5px 8px;text-align:left}th{background:var(--bg)}
+.wrap{overflow:auto;max-height:420px}.ok{color:var(--ok)}.bad{color:var(--bad)}.tr{padding:4px 0;border-bottom:1px dashed var(--bd)}.tr small{display:block;color:var(--mut);white-space:pre-wrap;word-break:break-word}
+.pill{display:inline-block;border:1px solid var(--bd);border-radius:99px;padding:1px 10px;margin:2px;font-size:13px}
+</style></head><body><main>
+<h1>Agentic RAG Text-to-SQL</h1>
+<div class="sub">Ask your database a question. Schema RAG &rarr; plan &rarr; SQL &rarr; validate &rarr; repair &rarr; execute &rarr; explain.</div>
+<div class="card">
+<textarea id="q" placeholder="Ask your database a question...">Find the top 5 vehicles by average rating that have received at least 2 ratings.</textarea>
+<div class="row"><button id="go">Generate SQL</button>
+<label>Mode <select id="mode"><option value="agentic">Agentic RAG</option><option value="basic">Basic RAG</option></select></label>
+<span id="health" class="sub" style="margin:0"></span></div>
+<div class="row chips" id="chips"></div></div>
+<div id="out" style="display:none" class="card">
+<div class="stats" id="stats"></div>
+<div class="tabs" id="tabs"></div><div id="panel"></div></div>
+</main>
+<script>
+const API=new URLSearchParams(location.search).get('api')||'';
+const $=id=>document.getElementById(id);
+const EX=["Show all vehicles in the SUV category.","How many customers are from Delhi?","Find the average rating of each vehicle.","Find customers whose total rental spending is greater than the average customer spending.","Find vehicles based on engine horsepower."];
+EX.forEach(t=>{const b=document.createElement('button');b.textContent=t;b.onclick=()=>{$('q').value=t;go()};$('chips').appendChild(b)});
+const esc=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+let data=null,tab='Answer';
+const TABS=['Answer','SQL','Retrieved Schema','Query Plan','Agent Trace','Execution Result'];
+function renderTabs(){$('tabs').innerHTML='';TABS.forEach(t=>{const b=document.createElement('button');b.className='tab'+(t===tab?' on':'');b.textContent=t;b.onclick=()=>{tab=t;renderTabs();renderPanel()};$('tabs').appendChild(b)})}
+function tbl(r){if(!r)return '<i>No result</i>';let h='<div class="wrap"><table><tr>'+r.columns.map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr>';
+ r.rows.forEach(x=>h+='<tr>'+x.map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>');return h+'</table></div>'+(r.truncated?'<p>Showing capped rows of '+r.row_count+'</p>':'')}
+function renderPanel(){const d=data,dbg=d.debug||{};let h='';
+ if(tab==='Answer'){h=(d.status==='success'?'<p class="ok"><b>Success</b></p>':d.status==='unavailable'?'<p><b>Not available</b></p>':'<p class="bad"><b>Failed</b></p>')+'<p>'+esc(d.answer||d.error||'')+'</p>'+(d.error&&d.answer?'<p class="bad">'+esc(d.error)+'</p>':'');}
+ else if(tab==='SQL'){h='<pre>'+esc(d.sql||'(none)')+'</pre>'+(dbg.first_sql&&dbg.first_sql!==d.sql?'<p>First attempt (before repair):</p><pre>'+esc(dbg.first_sql)+'</pre>':'')}
+ else if(tab==='Retrieved Schema'){h='<p>Top-K by similarity: '+(dbg.ranked_tables||[]).map(t=>'<span class="pill">'+esc(t)+'</span>').join('')+'</p><p>Added by relationship expansion: '+((dbg.bridge_tables||[]).map(t=>'<span class="pill">'+esc(t)+'</span>').join('')||'none')+'</p><pre>'+esc(dbg.retrieved_schema||'')+'</pre>'}
+ else if(tab==='Query Plan'){h='<pre>'+esc(d.query_plan?JSON.stringify(d.query_plan,null,2):'(no plan in Basic RAG mode)')+'</pre>'}
+ else if(tab==='Agent Trace'){(dbg.trace||[]).forEach(t=>h+='<div class="tr"><span class="'+(t.ok?'ok':'bad')+'">'+(t.ok?'&#10003;':'&#10007;')+'</span> ['+t.step+'] '+esc(t.name)+(t.detail?'<small>'+esc(t.detail)+'</small>':'')+'</div>')}
+ else h=tbl(d.result);$('panel').innerHTML=h}
+async function go(){const q=$('q').value.trim();if(q.length<3)return;$('go').disabled=true;$('go').textContent='Working...';
+ try{const r=await fetch(API+'/api/query',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,mode:$('mode').value,debug:true})});
+ const j=await r.json();if(!r.ok)throw new Error(j.detail||r.statusText);data=j;
+ $('stats').innerHTML=`<span>Execution time <b>${j.latency_ms} ms</b></span><span>Agent steps <b>${j.agent_steps}</b></span><span>Repair attempts <b>${j.repair_attempts}</b></span><span>Tool calls <b>${j.tool_calls}</b></span><span>Mode <b>${j.mode}</b></span>`;
+ $('out').style.display='block';tab='Answer';renderTabs();renderPanel()}
+ catch(e){data={status:'failed',error:String(e.message||e),answer:'',debug:{}};$('out').style.display='block';$('stats').innerHTML='';tab='Answer';renderTabs();renderPanel()}
+ $('go').disabled=false;$('go').textContent='Generate SQL'}
+$('go').onclick=go;
+fetch(API+'/api/health').then(r=>r.json()).then(h=>$('health').textContent='LLM: '+h.llm_provider+' | embeddings: '+h.embedding_provider).catch(()=>$('health').textContent='API not reachable');
+</script></body></html>

@@ -1,0 +1,11 @@
+{
+  "customers": {"description": "People who rent vehicles.",
+                "columns": {"city": "city where the customer lives", "registration_date": "date the customer joined"}},
+  "branches": {"description": "Rental branches (locations) that own vehicles.", "columns": {}},
+  "vehicles": {"description": "Stores information about rental vehicles.",
+               "columns": {"price_per_day": "daily rental price", "category": "vehicle class such as SUV or Sedan"}},
+  "rental": {"description": "Each rental transaction: which customer rented which vehicle, when, and the amount paid.",
+             "columns": {"amount": "total amount paid (revenue) for the rental"}},
+  "rating": {"description": "Customer ratings (1-5) and review text for a rental.", "columns": {"rating": "score from 1 (worst) to 5 (best)"}},
+  "maintenance": {"description": "Service and repair records for vehicles.", "columns": {"cost": "maintenance cost"}}
+}

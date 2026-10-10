@@ -1,0 +1,10 @@
+TASK: explanation
+Explain in 2-4 plain sentences what the SQL does and summarise the result for the user. Do not invent numbers that are not in the result.
+
+QUESTION: {{question}}
+
+SQL:
+{{sql}}
+
+RESULT (first rows, {{row_count}} rows total):
+{{result}}

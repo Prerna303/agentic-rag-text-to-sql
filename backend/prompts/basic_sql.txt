@@ -1,0 +1,9 @@
+TASK: basic_sql
+Write one SQLite query answering the question using the schema below.
+If the schema cannot answer it, reply exactly: UNAVAILABLE: <short reason>
+Return ONLY the SQL.
+
+SCHEMA:
+{{schema}}
+
+QUESTION: {{question}}

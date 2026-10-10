@@ -1,0 +1,351 @@
+{
+  "tables": [
+    {
+      "name": "branches",
+      "description": "Rental branches (locations) that own vehicles.",
+      "columns": [
+        {
+          "name": "branch_id",
+          "data_type": "INTEGER",
+          "is_primary_key": true,
+          "description": "",
+          "sample_values": []
+        },
+        {
+          "name": "branch_name",
+          "data_type": "TEXT",
+          "is_primary_key": false,
+          "description": "",
+          "sample_values": [
+            "Bengaluru Central",
+            "Delhi Central",
+            "Hyderabad Central",
+            "Mumbai Central"
+          ]
+        },
+        {
+          "name": "city",
+          "data_type": "TEXT",
+          "is_primary_key": false,
+          "description": "",
+          "sample_values": [
+            "Bengaluru",
+            "Delhi",
+            "Hyderabad",
+            "Mumbai"
+          ]
+        },
+        {
+          "name": "opened_year",
+          "data_type": "INTEGER",
+          "is_primary_key": false,
+          "description": "",
+          "sample_values": []
+        }
+      ],
+      "primary_keys": [
+        "branch_id"
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "customers",
+      "description": "People who rent vehicles.",
+      "columns": [
+        {
+          "name": "customer_id",
+          "data_type": "INTEGER",
+          "is_primary_key": true,
+          "description": "",
+          "sample_values": []
+        },
+        {
+          "name": "name",
+          "data_type": "TEXT",
+          "is_primary_key": false,
+          "description": "",
+          "sample_values": []
+        },
+        {
+          "name": "email",
+          "data_type": "TEXT",
+          "is_primary_key": false,
+          "description": "",
+          "sample_values": []
+        },
+        {
+          "name": "city",
+          "data_type": "TEXT",
+          "is_primary_key": false,
+          "description": "city where the customer lives",
+          "sample_values": [
+            "Bengaluru",
+            "Chennai",
+            "Delhi",
+            "Hyderabad",
+            "Jaipur",
+            "Kolkata",
+            "Mumbai",
+            "Pune"
+          ]
+        },
+        {
+          "name": "registration_date",
+          "data_type": "TEXT",
+          "is_primary_key": false,
+          "description": "date the customer joined",
+          "sample_values": []
+        }
+      ],
+      "primary_keys": [
+        "customer_id"
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "maintenance",
+      "description": "Service and repair records for vehicles.",
+      "columns": [
+        {
+          "name": "maintenance_id",
+          "data_type": "INTEGER",
+          "is_primary_key": true,
+          "description": "",
+          "sample_values": []
+        },
+        {
+          "name": "vehicle_id",
+          "data_type": "INTEGER",
+          "is_primary_key": false,
+          "description": "",
+          "sample_values": []
+        },
+        {
+          "name": "service_date",
+          "data_type": "TEXT",
+          "is_primary_key": false,
+          "description": "",
+          "sample_values": []
+        },
+        {
+          "name": "cost",
+          "data_type": "REAL",
+          "is_primary_key": false,
+          "description": "maintenance cost",
+          "sample_values": []
+        },
+        {
+          "name": "description",
+          "data_type": "TEXT",
+          "is_primary_key": false,
+          "description": "",
+          "sample_values": [
+            "Brake service",
+            "Engine check",
+            "General service",
+            "Oil change",
+            "Tyre replacement"
+          ]
+        }
+      ],
+      "primary_keys": [
+        "maintenance_id"
+      ],
+      "foreign_keys": [
+        {
+          "column": "vehicle_id",
+          "ref_table": "vehicles",
+          "ref_column": "vehicle_id"
+        }
+      ]
+    },
+    {
+      "name": "rating",
+      "description": "Customer ratings (1-5) and review text for a rental.",
+      "columns": [
+        {
+          "name": "rating_id",
+          "data_type": "INTEGER",
+          "is_primary_key": true,
+          "description": "",
+          "sample_values": []
+        },
+        {
+          "name": "rental_id",
+          "data_type": "INTEGER",
+          "is_primary_key": false,
+          "description": "",
+          "sample_values": []
+        },
+        {
+          "name": "rating",
+          "data_type": "INTEGER",
+          "is_primary_key": false,
+          "description": "score from 1 (worst) to 5 (best)",
+          "sample_values": []
+        },
+        {
+          "name": "review_text",
+          "data_type": "TEXT",
+          "is_primary_key": false,
+          "description": "",
+          "sample_values": []
+        }
+      ],
+      "primary_keys": [
+        "rating_id"
+      ],
+      "foreign_keys": [
+        {
+          "column": "rental_id",
+          "ref_table": "rental",
+          "ref_column": "rental_id"
+        }
+      ]
+    },
+    {
+      "name": "rental",
+      "description": "Each rental transaction: which customer rented which vehicle, when, and the amount paid.",
+      "columns": [
+        {
+          "name": "rental_id",
+          "data_type": "INTEGER",
+          "is_primary_key": true,
+          "description": "",
+          "sample_values": []
+        },
+        {
+          "name": "customer_id",
+          "data_type": "INTEGER",
+          "is_primary_key": false,
+          "description": "",
+          "sample_values": []
+        },
+        {
+          "name": "vehicle_id",
+          "data_type": "INTEGER",
+          "is_primary_key": false,
+          "description": "",
+          "sample_values": []
+        },
+        {
+          "name": "rental_date",
+          "data_type": "TEXT",
+          "is_primary_key": false,
+          "description": "",
+          "sample_values": []
+        },
+        {
+          "name": "return_date",
+          "data_type": "TEXT",
+          "is_primary_key": false,
+          "description": "",
+          "sample_values": []
+        },
+        {
+          "name": "amount",
+          "data_type": "REAL",
+          "is_primary_key": false,
+          "description": "total amount paid (revenue) for the rental",
+          "sample_values": []
+        }
+      ],
+      "primary_keys": [
+        "rental_id"
+      ],
+      "foreign_keys": [
+        {
+          "column": "vehicle_id",
+          "ref_table": "vehicles",
+          "ref_column": "vehicle_id"
+        },
+        {
+          "column": "customer_id",
+          "ref_table": "customers",
+          "ref_column": "customer_id"
+        }
+      ]
+    },
+    {
+      "name": "vehicles",
+      "description": "Stores information about rental vehicles.",
+      "columns": [
+        {
+          "name": "vehicle_id",
+          "data_type": "INTEGER",
+          "is_primary_key": true,
+          "description": "",
+          "sample_values": []
+        },
+        {
+          "name": "model",
+          "data_type": "TEXT",
+          "is_primary_key": false,
+          "description": "",
+          "sample_values": [
+            "Accord",
+            "Alcazar",
+            "Altroz",
+            "Baleno",
+            "Camry",
+            "Carens",
+            "Ciaz",
+            "City"
+          ]
+        },
+        {
+          "name": "manufacturer",
+          "data_type": "TEXT",
+          "is_primary_key": false,
+          "description": "",
+          "sample_values": [
+            "Honda",
+            "Hyundai",
+            "Kia",
+            "Mahindra",
+            "Suzuki",
+            "Tata",
+            "Toyota"
+          ]
+        },
+        {
+          "name": "category",
+          "data_type": "TEXT",
+          "is_primary_key": false,
+          "description": "vehicle class such as SUV or Sedan",
+          "sample_values": [
+            "Hatchback",
+            "Luxury",
+            "SUV",
+            "Sedan",
+            "Van"
+          ]
+        },
+        {
+          "name": "price_per_day",
+          "data_type": "REAL",
+          "is_primary_key": false,
+          "description": "daily rental price",
+          "sample_values": []
+        },
+        {
+          "name": "branch_id",
+          "data_type": "INTEGER",
+          "is_primary_key": false,
+          "description": "",
+          "sample_values": []
+        }
+      ],
+      "primary_keys": [
+        "vehicle_id"
+      ],
+      "foreign_keys": [
+        {
+          "column": "branch_id",
+          "ref_table": "branches",
+          "ref_column": "branch_id"
+        }
+      ]
+    }
+  ]
+}
